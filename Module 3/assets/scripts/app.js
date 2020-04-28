@@ -20,14 +20,28 @@ const LOG_EVENT_PLAYER_HEAL = "PLAYER_HEAL";
 const LOG_EVENT_MONSTER_ATTACK = "MONSTER_ATTACK";
 const LOG_EVENT_GAME_OVER = "GAME_OVER";
 
-const enteredValue = prompt("Maximum life for you and the monster.", "100");
-
-let chosenMaxLife = parseInt(enteredValue);
 let battleLog = [];
+let lastLoggedEntry;
 
-if (isNaN(chosenMaxLife) || chosenMaxLife <= 0) {
-    chosenMaxLife = 100;
+function getMaxHealthValues() {
+    const enteredValue = prompt("Maximum life for you and the monster.", "100");
+    const parsedValue = parseInt(enteredValue);
+
+    if (isNaN(chosenMaxLife) || chosenMaxLife <= 0) {
+        throw { message: "Invalid user input, not a number!" };
+    }
+    return parsedValue;
 }
+let chosenMaxLife;
+
+try {
+    chosenMaxLife = getMaxHealthValues();
+} catch (error) {
+    console.log(error);
+    chosenMaxLife = 100;
+    alert("You entered something wrong, we will default to 100 health.");
+    // throw error;
+} // finally {}
 
 let currentMonsterHealth = chosenMaxLife;
 let currentPlayerHealth = chosenMaxLife;
@@ -96,7 +110,6 @@ function endRound() {
         currentMonsterHealth,
         currentPlayerHealth
     );
-
     if (currentPlayerHealth <= 0 && hasBonusLife) {
         hasBonusLife = false;
         removeBonusLife();
@@ -105,6 +118,7 @@ function endRound() {
         alert("You would be dead, but you're bonus life saved you!");
     }
 
+    // Can use a switch case here, instead of explicit if statements.
     if (currentMonsterHealth <= 0 && currentPlayerHealth >= 0) {
         alert("You win!");
         writeToLog(
@@ -143,7 +157,7 @@ function attackMonster(mode) {
         mode === MODE_ATTACK
             ? LOG_EVENT_PLAYER_ATTACK
             : LOG_EVENT_PLAYER_STRONG_ATTACK;
-    /* Explicite if statements
+    /* explicit if statements
     let maxDamage;
     let logEvent;
     if (mode === MODE_ATTACK) {
@@ -189,7 +203,27 @@ function healPlayerHandler() {
 }
 
 function showLogHandler() {
-    console.log(battleLog);
+    /*     for (let i = 0; i < battleLog.length; i++) {
+        console.log("-----------");
+        console.log(battleLog[i]);
+    } */
+    let i = 0;
+    for (const logEntry of battleLog) {
+        if (
+            (!lastLoggedEntry && lastLoggedEntry !== 0) ||
+            lastLoggedEntry < i
+        ) {
+            // This is for arrays only, and does not hold an index value like the classic for loop does.
+            console.log(`#${i}`);
+            for (const key in logEntry) {
+                // For gettings things out of an object.
+                console.log(`${key} => ${logEntry[key]}`);
+            }
+            lastLoggedEntry = i;
+            break;
+        }
+        i++;
+    }
 }
 
 attackBtn.addEventListener("click", attackHandler);
